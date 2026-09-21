@@ -76,7 +76,7 @@ function renderProfileData(data) {
     }
     if (statGems) statGems.textContent = data.gems || 0;
     if (bioInput && document.activeElement !== bioInput) bioInput.value = data.bio || "";
-    if (displayStatus) displayStatus.textContent = data.statusLevel || "Basic";
+    if (displayStatus) displayStatus.textContent = data.statusLevel || "Standard";
 
     if (bannerBg && data.bannerUrl) {
         bannerBg.style.backgroundImage = `url(${data.bannerUrl})`;
