@@ -116,7 +116,6 @@ function listenToAllUserProfiles() {
                 }
             }
         });
-        if (currentRoom) loadMessages(currentRoom);
     }, (error) => {});
 }
 
@@ -134,11 +133,11 @@ function loadMessages(room) {
     if (unsubscribe) unsubscribe();
     if (!currentUser || !messagesContainer) return;
     
-    const twentyThreeHoursAgo = new Date(Date.now() - (23 * 60 * 60 * 1000));
+    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
     const q = query(
         collection(db, "messages"), 
         where("room", "==", room),
-        where("createdAt", ">", twentyThreeHoursAgo)
+        where("createdAt", ">", twentyFourHoursAgo)
     );
 
     unsubscribe = onSnapshot(q, (snapshot) => {
@@ -175,7 +174,9 @@ function loadMessages(room) {
             messagesContainer.appendChild(wrapperDiv);
         });
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, (error) => {});
+    }, (error) => {
+        console.error("Error loading messages query:", error);
+    });
 }
 
 async function sendMessage() {
