@@ -88,9 +88,7 @@ onAuthStateChanged(auth, async (user) => {
                 status: "online"
             }, { merge: true });
             
-        } catch (e) {
-            console.error("Error loading user profile in chat:", e);
-        }
+        } catch (e) {}
         
         setupPresence(db, currentUser);
         listenToAllUserProfiles();
@@ -136,7 +134,12 @@ function loadMessages(room) {
     if (unsubscribe) unsubscribe();
     if (!currentUser || !messagesContainer) return;
     
-    const q = query(collection(db, "messages"), where("room", "==", room));
+    const twentyThreeHoursAgo = new Date(Date.now() - (23 * 60 * 60 * 1000));
+    const q = query(
+        collection(db, "messages"), 
+        where("room", "==", room),
+        where("createdAt", ">", twentyThreeHoursAgo)
+    );
 
     unsubscribe = onSnapshot(q, (snapshot) => {
         messagesContainer.innerHTML = '';
@@ -172,7 +175,7 @@ function loadMessages(room) {
             messagesContainer.appendChild(wrapperDiv);
         });
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    });
+    }, (error) => {});
 }
 
 async function sendMessage() {
