@@ -88,7 +88,9 @@ onAuthStateChanged(auth, async (user) => {
                 status: "online"
             }, { merge: true });
             
-        } catch (e) {}
+        } catch (e) {
+            console.error("Error loading user profile in chat:", e);
+        }
         
         setupPresence(db, currentUser);
         listenToAllUserProfiles();
@@ -143,8 +145,8 @@ function loadMessages(room) {
         snapshot.forEach((docSnap) => docs.push(docSnap.data()));
 
         docs.sort((a, b) => {
-            const timeA = a.createdAt ? (typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : Date.now()) : Date.now();
-            const timeB = b.createdAt ? (typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : Date.now()) : Date.now();
+            const timeA = a.createdAt ? a.createdAt.toMillis() : Date.now();
+            const timeB = b.createdAt ? b.createdAt.toMillis() : Date.now();
             return timeA - timeB;
         });
 
@@ -170,7 +172,7 @@ function loadMessages(room) {
             messagesContainer.appendChild(wrapperDiv);
         });
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, (error) => {});
+    });
 }
 
 async function sendMessage() {
