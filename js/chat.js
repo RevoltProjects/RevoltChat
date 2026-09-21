@@ -6,7 +6,7 @@ if (localStorage.getItem('revolt_is_down') === 'true') {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, onSnapshot, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { initRevoltCounter, setupPresence } from "./revoltcounter.js";
 
 const firebaseConfig = {
@@ -148,8 +148,8 @@ function loadMessages(room) {
         snapshot.forEach((docSnap) => docs.push(docSnap.data()));
 
         docs.sort((a, b) => {
-            const timeA = a.createdAt ? a.createdAt.toMillis() : Date.now();
-            const timeB = b.createdAt ? b.createdAt.toMillis() : Date.now();
+            const timeA = a.createdAt ? (typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : new Date(a.createdAt).getTime()) : Date.now();
+            const timeB = b.createdAt ? (typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : new Date(b.createdAt).getTime()) : Date.now();
             return timeA - timeB;
         });
 
@@ -192,7 +192,7 @@ async function sendMessage() {
             uid: currentUser.uid,
             username: currentUsername || sessionStorage.getItem('revolt_temp_username') || "User",
             pfpUrl: currentPfpUrl,
-            createdAt: serverTimestamp()
+            createdAt: new Date()
         });
     } catch (error) {}
 }
