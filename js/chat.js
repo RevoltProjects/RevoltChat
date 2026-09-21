@@ -6,7 +6,7 @@ if (localStorage.getItem('revolt_is_down') === 'true') {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, onSnapshot, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { initRevoltCounter, setupPresence } from "./revoltcounter.js";
 
 const firebaseConfig = {
@@ -116,6 +116,7 @@ function listenToAllUserProfiles() {
                 }
             }
         });
+        if (currentRoom) loadMessages(currentRoom);
     }, (error) => {});
 }
 
@@ -133,12 +134,7 @@ function loadMessages(room) {
     if (unsubscribe) unsubscribe();
     if (!currentUser || !messagesContainer) return;
     
-    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
-    const q = query(
-        collection(db, "messages"), 
-        where("room", "==", room),
-        where("createdAt", ">", twentyFourHoursAgo)
-    );
+    const q = query(collection(db, "messages"), where("room", "==", room));
 
     unsubscribe = onSnapshot(q, (snapshot) => {
         messagesContainer.innerHTML = '';
@@ -147,8 +143,8 @@ function loadMessages(room) {
         snapshot.forEach((docSnap) => docs.push(docSnap.data()));
 
         docs.sort((a, b) => {
-            const timeA = a.createdAt ? (typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : new Date(a.createdAt).getTime()) : Date.now();
-            const timeB = b.createdAt ? (typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : new Date(b.createdAt).getTime()) : Date.now();
+            const timeA = a.createdAt ? (typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : Date.now()) : Date.now();
+            const timeB = b.createdAt ? (typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : Date.now()) : Date.now();
             return timeA - timeB;
         });
 
@@ -174,9 +170,7 @@ function loadMessages(room) {
             messagesContainer.appendChild(wrapperDiv);
         });
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, (error) => {
-        console.error("Error loading messages query:", error);
-    });
+    }, (error) => {});
 }
 
 async function sendMessage() {
@@ -193,7 +187,7 @@ async function sendMessage() {
             uid: currentUser.uid,
             username: currentUsername || sessionStorage.getItem('revolt_temp_username') || "User",
             pfpUrl: currentPfpUrl,
-            createdAt: new Date()
+            createdAt: serverTimestamp()
         });
     } catch (error) {}
 }
