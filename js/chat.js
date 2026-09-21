@@ -145,8 +145,8 @@ function loadMessages(room) {
         snapshot.forEach((docSnap) => docs.push(docSnap.data()));
 
         docs.sort((a, b) => {
-            const timeA = a.createdAt ? a.createdAt.toMillis() : Date.now();
-            const timeB = b.createdAt ? b.createdAt.toMillis() : Date.now();
+            const timeA = (a.createdAt && typeof a.createdAt.toMillis === 'function') ? a.createdAt.toMillis() : Date.now();
+            const timeB = (b.createdAt && typeof b.createdAt.toMillis === 'function') ? b.createdAt.toMillis() : Date.now();
             return timeA - timeB;
         });
 
